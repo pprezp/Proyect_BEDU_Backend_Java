@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE)
                 .hasRole("ADMIN")
                 .requestMatchers("/**")
-                .hasAnyRole("ADMIN", "USER")
+                .permitAll()
 
                 .anyRequest()
                 .authenticated()

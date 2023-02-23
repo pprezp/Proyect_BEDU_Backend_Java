@@ -37,14 +37,12 @@ public class UserController {
     @GetMapping("/users")
     public ResponseEntity <List<UserModel>> getUsers(
             @Email @RequestParam(required = false) String email,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String userType
+            @RequestParam(required = false) String username
     ){
         try{
-            System.out.println(username);
             List<UserModel> data = new ArrayList<UserModel>();
             if (email != null) {
-                data = userService.getUsersByEmail(email);
+//                data = userService.getUsersByEmailAndPassword(email);
             }else if (username != null) {
                 data = userService.getUsersByUsername(username);
             }
@@ -84,12 +82,25 @@ public class UserController {
             user.setUserType(userType);
             user.setCreatedAt(LocalDateTime.now());
             user.setUpdatedAt(LocalDateTime.now());
-            saved = iUserRepository.save(user);
+            saved = userService.createUser(user);
 
             return new ResponseEntity<>(saved, HttpStatus.OK);
         }catch (Exception e){
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
+    @PostMapping("/users/authenticate")
+    public ResponseEntity<?> login( @RequestParam String email, String password ){
+        try{
+            UserModel user = userService.getUsersByEmailAndPassword(email, password);
+            System.out.println("DATA");
+            System.out.println(user.getEmail());
+        }catch(Exception e){
+
+        }
+
+        return null;
     }
 }

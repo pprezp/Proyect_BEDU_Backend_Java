@@ -5,6 +5,8 @@ import org.intent.backendIntent.models.UserTypeModel;
 import org.intent.backendIntent.repositories.IUserRepository;
 import org.intent.backendIntent.repositories.IUserTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,6 +14,9 @@ import java.util.List;
 @Service
 public class UserService {
     IUserRepository userRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     private final IUserTypeRepository iUserTypeRepository;
 
     @Autowired
@@ -33,9 +38,27 @@ public class UserService {
         return userRepository.findByUsernameContains(username);
     }
 
-    public List<UserModel> getUsersByEmail(String email){
+    public UserModel getUsersByEmailAndPassword(String email, String password){
         UserTypeModel userTypeb = new UserTypeModel();
-        userTypeb = iUserTypeRepository.findTypeById("1");
-        return userRepository.findByEmailContainsAndUserTypeAndActive(email, userTypeb, true);
+        userTypeb = iUserTypeRepository.findTypeById("2");
+        UserModel user =  userRepository.findByEmailContainsAndUserTypeAndActive(email, userTypeb, true);
+
+        System.out.println(user.getId());
+        System.out.println(user.getPassword());
+        System.out.println(password);
+
+        if(BCrypt.checkpw(password, user.getPassword())){
+            System.out.println(user.getId());
+            return user;
+        }
+        return null;
+    }
+
+    public UserModel createUser(UserModel user){
+        UserTypeModel usertype = iUserTypeRepository.findTypeById("2");
+        String hashedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(hashedPassword);
+        user.setUserType(usertype);
+        return userRepository.save(user);
     }
 }
